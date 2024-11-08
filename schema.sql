@@ -15,10 +15,10 @@ CREATE TABLE Economic_Indicators (
     indicator_id SERIAL PRIMARY KEY,
     country_id INT REFERENCES Country(country_id) ON DELETE CASCADE,
     year INT CHECK (year >= 1900 AND year <= 2100),
-    gdp FLOAT,
-    inflation_rate FLOAT,
-    unemployment_rate FLOAT,
-    gdp_growth_rate FLOAT
+    gdp FLOAT,  -- GDP in billions of USD
+    inflation_rate FLOAT,  -- Percentage
+    unemployment_rate FLOAT,  -- Percentage
+    gdp_growth_rate FLOAT  -- Percentage
 );
 
 -- Population Stats Table
@@ -33,17 +33,30 @@ CREATE TABLE Population_Stats (
     age_65_plus_pct FLOAT CHECK (age_65_plus_pct >= 0 AND age_65_plus_pct <= 100)
 );
 
--- Trade Table (Partitioned)
+-- Trade Table
 CREATE TABLE Trade (
     trade_id SERIAL PRIMARY KEY,
     country_id INT REFERENCES Country(country_id) ON DELETE CASCADE,
     year INT CHECK (year >= 1900 AND year <= 2100),
-    exports FLOAT,
-    imports FLOAT,
-    trade_balance FLOAT GENERATED ALWAYS AS (exports - imports) STORED
-) PARTITION BY RANGE (year);
+    exports FLOAT,  -- Exports in billions of USD
+    imports FLOAT,  -- Imports in billions of USD
+    trade_balance FLOAT GENERATED ALWAYS AS (exports - imports) STORED  -- Auto-calculated balance
+);
 
--- Initial Partitions for Trade Table
-CREATE TABLE Trade_2020 PARTITION OF Trade FOR VALUES FROM (2020) TO (2021);
-CREATE TABLE Trade_2021 PARTITION OF Trade FOR VALUES FROM (2021) TO (2022);
-CREATE TABLE Trade_2022 PARTITION OF Trade FOR VALUES FROM (2022) TO (2023);
+-- Government Table
+CREATE TABLE Government (
+    gov_id SERIAL PRIMARY KEY,
+    country_id INT REFERENCES Country(country_id) ON DELETE CASCADE,
+    year INT CHECK (year >= 1900 AND year <= 2100),
+    political_stability_index FLOAT CHECK (political_stability_index >= -2.5 AND political_stability_index <= 2.5),
+    corruption_index FLOAT CHECK (corruption_index >= 0 AND corruption_index <= 100)
+);
+
+-- Geography Table
+CREATE TABLE Geography (
+    geo_id SERIAL PRIMARY KEY,
+    country_id INT REFERENCES Country(country_id) ON DELETE CASCADE,
+    climate VARCHAR(100),
+    region_classification VARCHAR(50),  -- e.g., Developed, Developing
+    natural_resources VARCHAR(255)
+);
